@@ -3,17 +3,18 @@ import fs from 'node:fs/promises';
 import bodyParser from 'body-parser';
 import express from 'express';
 import dotenv from 'dotenv';
-
+import path from 'node:path';
 
 const app = express();
+dotenv.config();
 
 app.use(bodyParser.json());
-
 // Serve static files from the "public" directory (e.g., HTML, CSS, JS)
-app.use(express.static('public'));
+// app.use(express.static('public'));
+app.use(express.static(path.join(process.cwd(), 'public')));
 
 // Serve images from the "data/images" directory
-app.use('/images', express.static('data/images'));
+// app.use('/images', express.static('public/images'));
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -23,17 +24,25 @@ app.use((req, res, next) => {
 });
 
 app.get('/meals', async (req, res) => {
-  const meals = await fs.readFile('./data/available-meals.json', 'utf8');
-  res.json(JSON.parse(meals));
+  // const meals = await fs.readFile('./data/available-meals.json', 'utf8');
+  // res.json(JSON.parse(meals));
+  try {
+    const meals = await fs.readFile('./data/available-meals.json', 'utf8');
+    res.json(JSON.parse(meals));
+  } catch (err) {
+    res.status(500).json({ message: 'Error reading meals data' });
+  }
 });
 
 app.post('/orders', async (req, res) => {
   const orderData = req.body.order;
 
-  if (orderData === null || orderData.items === null || orderData.items.length === 0) {
-    return res
-      .status(400)
-      .json({ message: 'Missing data.' });
+  if (
+    orderData === null ||
+    orderData.items === null ||
+    orderData.items.length === 0
+  ) {
+    return res.status(400).json({ message: 'Missing data.' });
   }
 
   if (
@@ -50,13 +59,13 @@ app.post('/orders', async (req, res) => {
   ) {
     return res.status(400).json({
       message:
-        'Missing data: Email, name, street, postal code or city is missing.',
+        'Missing data: Email, name, street, postal code or city is missing.'
     });
   }
 
   const newOrder = {
     ...orderData,
-    id: (Math.random() * 1000).toString(),
+    id: (Math.random() * 1000).toString()
   };
   const orders = await fs.readFile('./data/orders.json', 'utf8');
   const allOrders = JSON.parse(orders);
