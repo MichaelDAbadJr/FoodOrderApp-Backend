@@ -8,7 +8,12 @@ import dotenv from 'dotenv';
 const app = express();
 
 app.use(bodyParser.json());
+
+// Serve static files from the "public" directory (e.g., HTML, CSS, JS)
 app.use(express.static('public'));
+
+// Serve images from the "data/images" directory
+app.use('/images', express.static('data/images'));
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
