@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 
 import bodyParser from 'body-parser';
 import express from 'express';
-require('dotenv').config();
+import dotenv from 'dotenv';
 
 
 const app = express();
