@@ -16,6 +16,7 @@ app.use(express.static(path.join(process.cwd(), 'public')));
 // Serve images from the "data/images" directory
 // app.use('/images', express.static('public/images'));
 
+// Set CORS headers
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
@@ -23,6 +24,7 @@ app.use((req, res, next) => {
   next();
 });
 
+// GET route to fetch all meals
 app.get('/meals', async (req, res) => {
   // const meals = await fs.readFile('./data/available-meals.json', 'utf8');
   // res.json(JSON.parse(meals));
@@ -34,6 +36,7 @@ app.get('/meals', async (req, res) => {
   }
 });
 
+// POST route to create a new order
 app.post('/orders', async (req, res) => {
   const orderData = req.body.order;
 
@@ -74,6 +77,17 @@ app.post('/orders', async (req, res) => {
   res.status(201).json({ message: 'Order created!' });
 });
 
+// GET route to fetch all orders
+app.get('/orders', async (req, res) => {
+  try {
+    const orders = await fs.readFile('./data/orders.json', 'utf8');
+    res.json(JSON.parse(orders));
+  } catch (err) {
+    res.status(500).json({ message: 'Error reading orders data' });
+  }
+});
+
+// 404 handler for unmatched routes
 app.use((req, res) => {
   if (req.method === 'OPTIONS') {
     return res.sendStatus(200);
@@ -82,6 +96,7 @@ app.use((req, res) => {
   res.status(404).json({ message: 'Not found' });
 });
 
+// Start the server
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
