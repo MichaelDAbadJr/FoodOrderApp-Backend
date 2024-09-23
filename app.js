@@ -4,9 +4,13 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'node:path';
+import Stripe from 'stripe'; 
 
 const app = express();
 dotenv.config();
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // Initialize Stripe with your secret key
+
 
 app.use(bodyParser.json());
 // Serve static files from the "public" directory (e.g., HTML, CSS, JS)
@@ -75,6 +79,21 @@ app.post('/orders', async (req, res) => {
   allOrders.push(newOrder);
   await fs.writeFile('./data/orders.json', JSON.stringify(allOrders));
   res.status(201).json({ message: 'Order created!' });
+});
+
+// POST route to create a payment intent
+app.post('/create-payment-intent', async (req, res) => {
+  const { amount } = req.body; // Expecting amount in cents
+
+  try {
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency: 'usd',
+    });
+    res.json({ clientSecret: paymentIntent.client_secret });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // GET route to fetch all orders
